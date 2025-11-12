@@ -1,37 +1,37 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Windows;
 
 namespace GameLauncher
 {
     enum LauncherStatus
     {
-        ready,
-        failed,
-        downloadingGame,
-        downloadingUpdate
+        Ready,
+        Failed,
+        DownloadingGame,
+        DownloadingUpdate
     }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private string rootPath;
-        private string versionFile;
-        private string gameZip;
-        private string gameExe;
+        private readonly string _rootPath;
+        private readonly string _versionFile;
+        private readonly string _gameZip;
+        private readonly string _gameExe;
         
-        private const string onlineVersionUrl = "https://drive.google.com/uc?export=download&id=17U6jVvrcR_7zatDoGBx0-mYLgdn7UKrO";
-        private const string onlineGameZipId = "1MQfPGjsSgpk8rjTBq7TgLkJ6DIJSv_14";
+        private const string OnlineVersionUrl = "https://drive.google.com/uc?export=download&id=17U6jVvrcR_7zatDoGBx0-mYLgdn7UKrO";
+        private const string OnlineGameZipId = "1MQfPGjsSgpk8rjTBq7TgLkJ6DIJSv_14";
 
         private LauncherStatus _status;
-        internal LauncherStatus Status
+
+        private LauncherStatus Status
         {
             get => _status;
             set
@@ -39,19 +39,17 @@ namespace GameLauncher
                 _status = value;
                 switch (_status)
                 {
-                    case LauncherStatus.ready:
+                    case LauncherStatus.Ready:
                         PlayButton.Content = "Play";
                         break;
-                    case LauncherStatus.failed:
+                    case LauncherStatus.Failed:
                         PlayButton.Content = "Update Failed - Retry";
                         break;
-                    case LauncherStatus.downloadingGame:
+                    case LauncherStatus.DownloadingGame:
                         PlayButton.Content = "Downloading Game";
                         break;
-                    case LauncherStatus.downloadingUpdate:
+                    case LauncherStatus.DownloadingUpdate:
                         PlayButton.Content = "Downloading Update";
-                        break;
-                    default:
                         break;
                 }
             }
@@ -61,23 +59,23 @@ namespace GameLauncher
         {
             InitializeComponent();
 
-            rootPath = Directory.GetCurrentDirectory();
-            versionFile = Path.Combine(rootPath, "Version.txt");
-            gameZip = Path.Combine(rootPath, "Build.zip");
-            gameExe = Path.Combine(rootPath, "Build", "Mortier FU.exe");
+            _rootPath = Directory.GetCurrentDirectory();
+            _versionFile = Path.Combine(_rootPath, "Version.txt");
+            _gameZip = Path.Combine(_rootPath, "Build.zip");
+            _gameExe = Path.Combine(_rootPath, "Build", "Mortier FU.exe");
         }
 
         private void CheckForUpdates()
         {
-            if (File.Exists(versionFile))
+            if (File.Exists(_versionFile))
             {
-                Version localVersion = new Version(File.ReadAllText(versionFile));
+                Version localVersion = new Version(File.ReadAllText(_versionFile));
                 VersionText.Text = localVersion.ToString();
 
                 try
                 {
-                    WebClient webClient = new WebClient();
-                    Version onlineVersion = new Version(webClient.DownloadString(onlineVersionUrl));
+                    HttpClient httpClient = new HttpClient();
+                    Version onlineVersion = new Version(httpClient.GetStringAsync(OnlineVersionUrl).Result);
 
                     if (onlineVersion.IsDifferentThan(localVersion))
                     {
@@ -85,41 +83,41 @@ namespace GameLauncher
                     }
                     else
                     {
-                        Status = LauncherStatus.ready;
+                        Status = LauncherStatus.Ready;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Status = LauncherStatus.failed;
+                    Status = LauncherStatus.Failed;
                     MessageBox.Show($"Error checking for game updates: {ex}");
                 }
             }
             else
             {
-                InstallGameFiles(false, Version.zero);
+                InstallGameFiles(false, Version.Zero);
             }
         }
 
-        private async void InstallGameFiles(bool _isUpdate, Version _onlineVersion)
+        private async void InstallGameFiles(bool isUpdate, Version onlineVersion)
         {
             try
             {
-                Status = _isUpdate ? LauncherStatus.downloadingUpdate : LauncherStatus.downloadingGame;
+                Status = isUpdate ? LauncherStatus.DownloadingUpdate : LauncherStatus.DownloadingGame;
 
-                if (!_isUpdate)
+                if (!isUpdate)
                 {
-                    using WebClient webClient = new WebClient();
-                    _onlineVersion = new Version(webClient.DownloadString(onlineVersionUrl));
+                    using HttpClient httpClient = new HttpClient();
+                    onlineVersion = new Version(httpClient.GetStringAsync(OnlineVersionUrl).Result);
                 }
 
                 // Téléchargement via Google Drive Helper
-                await GoogleDriveHelper.DownloadFileAsync(onlineGameZipId, gameZip);
+                await GoogleDriveHelperHttpClient.DownloadFileAsync(OnlineGameZipId, _gameZip);
 
-                DownloadGameCompletedCallback(_onlineVersion);
+                DownloadGameCompletedCallback(onlineVersion);
             }
             catch (Exception ex)
             {
-                Status = LauncherStatus.failed;
+                Status = LauncherStatus.Failed;
                 MessageBox.Show($"Error installing game files: {ex}");
             }
         }
@@ -131,22 +129,22 @@ namespace GameLauncher
             try
             {
                 // Vérifier l'entête ZIP
-                byte[] header = File.ReadAllBytes(gameZip).Take(4).ToArray();
+                byte[] header = File.ReadAllBytes(_gameZip).Take(4).ToArray();
                 if (header[0] != 0x50 || header[1] != 0x4B)
                 {
                     throw new InvalidDataException("Fichier téléchargé invalide ou lien expiré.");
                 }
 
-                ZipFile.ExtractToDirectory(gameZip, rootPath, true);
-                File.Delete(gameZip);
+                ZipFile.ExtractToDirectory(_gameZip, _rootPath, true);
+                File.Delete(_gameZip);
 
-                File.WriteAllText(versionFile, onlineVersion.ToString());
+                File.WriteAllText(_versionFile, onlineVersion.ToString());
                 VersionText.Text = onlineVersion.ToString();
-                Status = LauncherStatus.ready;
+                Status = LauncherStatus.Ready;
             }
             catch (Exception ex)
             {
-                Status = LauncherStatus.failed;
+                Status = LauncherStatus.Failed;
                 MessageBox.Show($"Error finishing download: {ex}");
             }
         }
@@ -160,66 +158,68 @@ namespace GameLauncher
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(gameExe) && Status == LauncherStatus.ready)
+            if (File.Exists(_gameExe) && Status == LauncherStatus.Ready)
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(gameExe);
-                startInfo.WorkingDirectory = Path.Combine(rootPath, "Build");
+                ProcessStartInfo startInfo = new ProcessStartInfo(_gameExe)
+                {
+                    WorkingDirectory = Path.Combine(_rootPath, "Build")
+                };
                 Process.Start(startInfo);
 
                 Close();
             }
-            else if (Status == LauncherStatus.failed)
+            else if (Status == LauncherStatus.Failed)
             {
                 CheckForUpdates();
             }
         }
     }
 
-    struct Version
+    internal readonly struct Version
     {
-        internal static Version zero = new Version(0, 0, 0);
+        internal static Version Zero = new Version(0, 0, 0);
 
-        private short major;
-        private short minor;
-        private short subMinor;
+        private readonly short _major;
+        private readonly short _minor;
+        private readonly short _subMinor;
 
-        internal Version(short _major, short _minor, short _subMinor)
+        private Version(short major, short minor, short subMinor)
         {
-            major = _major;
-            minor = _minor;
-            subMinor = _subMinor;
+            this._major = major;
+            this._minor = minor;
+            this._subMinor = subMinor;
         }
-        internal Version(string _version)
+        internal Version(string version)
         {
-            string[] versionStrings = _version.Split('.');
+            string[] versionStrings = version.Split('.');
             if (versionStrings.Length != 3)
             {
-                major = 0;
-                minor = 0;
-                subMinor = 0;
+                _major = 0;
+                _minor = 0;
+                _subMinor = 0;
                 return;
             }
 
-            major = short.Parse(versionStrings[0]);
-            minor = short.Parse(versionStrings[1]);
-            subMinor = short.Parse(versionStrings[2]);
+            _major = short.Parse(versionStrings[0]);
+            _minor = short.Parse(versionStrings[1]);
+            _subMinor = short.Parse(versionStrings[2]);
         }
 
-        internal bool IsDifferentThan(Version _otherVersion)
+        internal bool IsDifferentThan(Version otherVersion)
         {
-            if (major != _otherVersion.major)
+            if (_major != otherVersion._major)
             {
                 return true;
             }
             else
             {
-                if (minor != _otherVersion.minor)
+                if (_minor != otherVersion._minor)
                 {
                     return true;
                 }
                 else
                 {
-                    if (subMinor != _otherVersion.subMinor)
+                    if (_subMinor != otherVersion._subMinor)
                     {
                         return true;
                     }
@@ -230,7 +230,7 @@ namespace GameLauncher
 
         public override string ToString()
         {
-            return $"{major}.{minor}.{subMinor}";
+            return $"{_major}.{_minor}.{_subMinor}";
         }
     }
 }
