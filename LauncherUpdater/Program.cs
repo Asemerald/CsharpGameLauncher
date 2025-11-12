@@ -5,7 +5,7 @@ using System.Web;
 
 namespace LauncherUpdater
 {
-    static class Program
+    internal static class Program
     {
         private const string OnlineLauncherVersionUrl =
             "https://drive.google.com/uc?export=download&id=1YzTah-51gTQ4aXbro0gu7i5UVm5h31xr";
