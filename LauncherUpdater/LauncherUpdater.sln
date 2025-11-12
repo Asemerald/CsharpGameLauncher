@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LauncherUpdater", "LauncherUpdater.csproj", "{B244D64B-9AD8-4CF4-B9D0-3FA0BC0A501C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B244D64B-9AD8-4CF4-B9D0-3FA0BC0A501C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B244D64B-9AD8-4CF4-B9D0-3FA0BC0A501C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B244D64B-9AD8-4CF4-B9D0-3FA0BC0A501C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B244D64B-9AD8-4CF4-B9D0-3FA0BC0A501C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
