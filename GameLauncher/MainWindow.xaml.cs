@@ -59,7 +59,7 @@ namespace GameLauncher
         {
             InitializeComponent();
 
-            _rootPath = Directory.GetCurrentDirectory();
+            _rootPath = AppDomain.CurrentDomain.BaseDirectory; 
             _versionFile = Path.Combine(_rootPath, "Version.txt");
             _gameZip = Path.Combine(_rootPath, "Build.zip");
             _gameExe = Path.Combine(_rootPath, "Build", "Mortier FU.exe");
