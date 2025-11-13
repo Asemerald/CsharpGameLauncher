@@ -17,8 +17,7 @@ namespace LauncherUpdater
 
         static async Task Main()
         {
-            string rootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "MortarGame");
+            string rootPath = AppDomain.CurrentDomain.BaseDirectory;
             string launcherExe = Path.Combine(rootPath, "GameLauncher.exe");
             string launcherVersionFile = Path.Combine(rootPath, "LauncherVersion.txt");
 
@@ -76,7 +75,12 @@ namespace LauncherUpdater
                 Console.WriteLine($"Erreur dans LauncherUpdater : {ex.Message}");
                 try
                 {
-                    Process.Start(launcherExe);
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = launcherExe,
+                        Arguments = $"--from-updater",
+                        UseShellExecute = true
+                    });
                 }
                 catch
                 {
