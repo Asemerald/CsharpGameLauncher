@@ -16,8 +16,12 @@ namespace LauncherUpdater
             "https://download.visualstudio.microsoft.com/download/pr/xxx/dotnet-runtime-9.0.0-win-x64.exe";
 
         static async Task Main()
-        {
-            string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        { 
+            // Chemin du répertoire du .exe courant
+            string rootPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Programs",
+                "Mortar Game");
             string launcherExe = Path.Combine(rootPath, "GameLauncher.exe");
             string launcherVersionFile = Path.Combine(rootPath, "LauncherVersion.txt");
 
@@ -49,6 +53,18 @@ namespace LauncherUpdater
                 Version localVersion = File.Exists(launcherVersionFile)
                     ? new Version(await File.ReadAllTextAsync(launcherVersionFile))
                     : Version.Zero;
+                
+                // Si le launcher n'existe pas, on force la mise à jour
+                bool needUpdate = !File.Exists(launcherExe) || onlineVersion.IsDifferentThan(localVersion);
+
+                if (needUpdate)
+                {
+                    // Télécharger le .exe mis à jour
+                    await GoogleDriveHelperHttpClient.DownloadFileAsync(OnlineLauncherExeId, launcherExe);
+
+                    // Mettre à jour la version locale
+                    await File.WriteAllTextAsync(launcherVersionFile, onlineVersion.ToString());
+                }
 
                 if (onlineVersion.IsDifferentThan(localVersion))
                 {
@@ -62,6 +78,7 @@ namespace LauncherUpdater
 
                     Console.WriteLine("Launcher mis à jour !");
                 }
+
                 else
                 {
                     Console.WriteLine("Launcher déjà à jour.");
