@@ -33,7 +33,7 @@ DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 OutputBaseFilename=Install Mortar Game
-SetupIconFile="C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\LauncherUpdater\images\Icon.ico"
+SetupIconFile="../GameLauncher/images/Icon.ico"
 SolidCompression=yes
 WizardStyle=classic
 
