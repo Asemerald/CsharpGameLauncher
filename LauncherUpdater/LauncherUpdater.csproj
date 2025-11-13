@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UseWPF>false</UseWPF>
-        <ApplicationIcon>images\Icon.ico</ApplicationIcon>
+        <ApplicationIcon>..\Resources\Icon.ico</ApplicationIcon>
         <!-- Publish as single file executable -->
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Resource Include="images\Icon.ico" />
+        <Resource Include="..\Resources\Icon.ico" />
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
 

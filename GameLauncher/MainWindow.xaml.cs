@@ -61,8 +61,8 @@ namespace GameLauncher
 
             _rootPath = AppDomain.CurrentDomain.BaseDirectory; 
             _versionFile = Path.Combine(_rootPath, "Version.txt");
-            _gameZip = Path.Combine(_rootPath, "Build.zip");
-            _gameExe = Path.Combine(_rootPath, "Build", "Mortier FU.exe");
+            _gameZip = Path.Combine(_rootPath, "Mortar Game.zip");
+            _gameExe = Path.Combine(_rootPath, "Mortar Game", "Mortar Game.exe");
         }
 
         private void CheckForUpdates()
@@ -160,12 +160,14 @@ namespace GameLauncher
         {
             if (File.Exists(_gameExe) && Status == LauncherStatus.Ready)
             {
+                string gameDir = Path.GetDirectoryName(_gameExe);
+
                 ProcessStartInfo startInfo = new ProcessStartInfo(_gameExe)
                 {
-                    WorkingDirectory = Path.Combine(_rootPath, "Build")
+                    WorkingDirectory = gameDir
                 };
-                Process.Start(startInfo);
 
+                Process.Start(startInfo);
                 Close();
             }
             else if (Status == LauncherStatus.Failed)

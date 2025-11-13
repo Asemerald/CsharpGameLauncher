@@ -5,12 +5,45 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameLauncher"
         mc:Ignorable="d"
+        Title="Mortier FUU Launcher"
         WindowStartupLocation="CenterScreen"
-        ContentRendered="Window_ContentRendered"
-        Title="Launcher" Height="576" Width="1080">
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        SizeToContent="Manual"
+        Width="1280"
+        Height="720"
+        MinWidth="1280"
+        MinHeight="720"
+        MaxWidth="1280"
+        MaxHeight="720"
+        Background="Black"
+        ContentRendered="Window_ContentRendered">
+
     <Grid>
-        <Image Stretch="UniformToFill" Source="images/LauncherBackground.png"/>
-        <TextBlock Name="VersionText" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="20" Foreground="White" Margin="0, 0, 5, 0"/>
-        <Button Name="PlayButton" Content="Checking For Updates" Click="PlayButton_Click" Height="60" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" Margin="0, 0, 0, 15" VerticalAlignment="Bottom" HorizontalAlignment="Center" MinWidth="150" Background="#000000" Padding="10,1,10,1"/>
+        <Image Source="Resources/Background.png"
+               Stretch="UniformToFill"/>
+        
+        <TextBlock Name="VersionText"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Right"
+                   FontSize="20"
+                   Foreground="White"
+                   Margin="0, 0, 10, 10"/>
+        
+        <Button Name="PlayButton"
+                Content="Checking For Updates"
+                Click="PlayButton_Click"
+                Height="60"
+                FontSize="28"
+                FontWeight="Bold"
+                Foreground="#DDFFFFFF"
+                Margin="0, 0, 0, 20"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                MinWidth="200"
+                Background="#000000"
+                Padding="10,1,10,1"
+                BorderBrush="#444"
+                BorderThickness="1"/>
     </Grid>
 </Window>

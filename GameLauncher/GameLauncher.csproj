@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>images\Icon.ico</ApplicationIcon>
+    <ApplicationIcon>..\Resources\Icon.ico</ApplicationIcon>
     <!-- Publish as single file executable -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -16,13 +16,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="images\Icon.ico" />
-    <None Remove="images\LauncherBackground.png" />
+    <None Remove="..\Resources\Icon.ico" />
+    <None Remove="..\Resources\Background.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="images\Icon.ico" />
-    <Resource Include="images\LauncherBackground.png" />
+    <Resource Include="..\Resources\Background.png">
+      <Link>Resources\Background.png</Link>
+    </Resource>
+    <Resource Include="..\Resources\Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>

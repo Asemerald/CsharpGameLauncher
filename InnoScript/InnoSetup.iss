@@ -33,7 +33,7 @@ DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 OutputBaseFilename=Install Mortar Game
-SetupIconFile="../GameLauncher/images/Icon.ico"
+SetupIconFile="..\Resources\Icon.ico"
 SolidCompression=yes
 WizardStyle=classic
 
@@ -45,7 +45,7 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\LauncherUpdater\bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LauncherUpdater\bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
