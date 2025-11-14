@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace GameLauncher
@@ -15,7 +16,7 @@ namespace GameLauncher
         {
             bool startedByUpdater = e.Args.Contains("--from-updater");
 
-            // Si lancé directement (pas par l'updater)
+            // Si lancé directement, lancer l'updater et quitter
             if (!startedByUpdater)
             {
                 string updaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LauncherUpdater.exe");
@@ -24,7 +25,6 @@ namespace GameLauncher
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = updaterPath,
-                        Arguments = "--launch-game",
                         UseShellExecute = true
                     });
                 }
@@ -32,7 +32,8 @@ namespace GameLauncher
                 Current.Shutdown();
                 return;
             }
-
+            
+            
             // Si déjà une instance en cours, on ferme
             if (!_mutex.WaitOne(TimeSpan.Zero, true))
             {
@@ -42,7 +43,6 @@ namespace GameLauncher
 
             base.OnStartup(e);
 
-            // Lancement de la fenêtre principale
             MainWindow window = new MainWindow();
             window.Show();
         }

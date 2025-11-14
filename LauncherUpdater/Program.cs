@@ -135,8 +135,7 @@ namespace LauncherUpdater
         {
             if (Directory.Exists(destDir))
             {
-                foreach (var file in Directory.GetFiles(destDir, "*", SearchOption.AllDirectories))
-                    File.Delete(file);
+                //Do nothing, we will overwrite files
             }
             else Directory.CreateDirectory(destDir);
 
