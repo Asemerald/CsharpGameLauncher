@@ -37,10 +37,6 @@ SetupIconFile="..\Resources\Icon.ico"
 SolidCompression=yes
 WizardStyle=classic
 
-[Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "french"; MessagesFile: "compiler:Languages\French.isl"
-
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
