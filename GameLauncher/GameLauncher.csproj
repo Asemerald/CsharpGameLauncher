@@ -5,11 +5,6 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>..\Resources\Icon.ico</ApplicationIcon>
-    <!-- Publish as single file executable -->
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <!-- Disable debug info to reduce size -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>

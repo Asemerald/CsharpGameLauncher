@@ -2,6 +2,7 @@
 using System.Net;
 using HtmlAgilityPack;
 using System.Web;
+using System.IO.Compression;
 
 namespace LauncherUpdater
 {
@@ -10,147 +11,142 @@ namespace LauncherUpdater
         private const string OnlineLauncherVersionUrl =
             "https://drive.google.com/uc?export=download&id=1YzTah-51gTQ4aXbro0gu7i5UVm5h31xr";
 
-        private const string OnlineLauncherExeId = "1hjKUsueM6QvcVfLjiRNFaGVt6Lu_dJaM";
-
+        private const string LauncherZipId =
+            "1hjKUsueM6QvcVfLjiRNFaGVt6Lu_dJaM"; // ID de ton zip
         private const string DotnetRuntimeUrl =
             "https://download.visualstudio.microsoft.com/download/pr/xxx/dotnet-runtime-9.0.0-win-x64.exe";
 
         static async Task Main()
-        { 
-            // Chemin du répertoire du .exe courant
+        {
             string rootPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Programs",
                 "Mortar Game");
+
+            string versionFile = Path.Combine(rootPath, "LauncherVersion.txt");
             string launcherExe = Path.Combine(rootPath, "GameLauncher.exe");
-            string launcherVersionFile = Path.Combine(rootPath, "LauncherVersion.txt");
 
             Console.WriteLine("=== LauncherUpdater démarré ===");
 
+            if (!Directory.Exists(rootPath))
+                Directory.CreateDirectory(rootPath);
+
             if (!IsDotNet9Installed())
             {
-                Console.WriteLine(".NET 9 Runtime non trouvé. Téléchargement et installation...");
+                Console.WriteLine(".NET 9 Runtime absent → installation…");
                 await InstallDotNet9Async();
-                Console.WriteLine(".NET 9 installé !");
             }
             else
             {
                 Console.WriteLine(".NET 9 Runtime détecté.");
             }
 
-            if (!Directory.Exists(rootPath))
-                Directory.CreateDirectory(rootPath);
+            // ---- Vérifier version ----
+            using HttpClient client = new HttpClient();
+            string onlineVersionStr = await client.GetStringAsync(OnlineLauncherVersionUrl);
+            Version onlineVersion = new Version(onlineVersionStr);
 
+            Version localVersion = File.Exists(versionFile)
+                ? new Version(await File.ReadAllTextAsync(versionFile))
+                : Version.Zero;
+
+            bool needUpdate = !File.Exists(launcherExe) || localVersion.IsDifferentThan(onlineVersion);
+
+            if (needUpdate)
+            {
+                Console.WriteLine($"Téléchargement ZIP v{onlineVersion}…");
+                string zipPath = Path.Combine(Path.GetTempPath(), "GameLauncher.zip");
+
+                await GoogleDriveHelperHttpClient.DownloadFileAsync(LauncherZipId, zipPath, handleConfirmation: true);
+
+                Console.WriteLine("Décompression…");
+                ExtractZipSafe(zipPath, rootPath);
+                File.Delete(zipPath);
+
+                await File.WriteAllTextAsync(versionFile, onlineVersion.ToString());
+                Console.WriteLine("Mise à jour appliquée !");
+            }
+            else
+            {
+                Console.WriteLine("Launcher déjà à jour.");
+            }
+
+            // ---- Lancer le launcher ----
+            Console.WriteLine("Lancement du launcher…");
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(launcherExe)).Length == 0)
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = launcherExe,
+                    Arguments = "--from-updater",
+                    UseShellExecute = false,
+                    CreateNoWindow = false
+                });
+            }
+
+        }
+
+        // ------------------ UTILITAIRES ------------------
+
+        static bool IsDotNet9Installed()
+        {
             try
             {
-                using HttpClient client = new HttpClient();
-
-                // Récupérer la version en ligne
-                string onlineVersionString = await client.GetStringAsync(OnlineLauncherVersionUrl);
-                Version onlineVersion = new Version(onlineVersionString);
-
-                // Lire la version locale
-                Version localVersion = File.Exists(launcherVersionFile)
-                    ? new Version(await File.ReadAllTextAsync(launcherVersionFile))
-                    : Version.Zero;
-                
-                // Si le launcher n'existe pas, on force la mise à jour
-                bool needUpdate = !File.Exists(launcherExe) || onlineVersion.IsDifferentThan(localVersion);
-
-                if (needUpdate)
-                {
-                    // Télécharger le .exe mis à jour
-                    await GoogleDriveHelperHttpClient.DownloadFileAsync(OnlineLauncherExeId, launcherExe);
-
-                    // Mettre à jour la version locale
-                    await File.WriteAllTextAsync(launcherVersionFile, onlineVersion.ToString());
-                }
-
-                if (onlineVersion.IsDifferentThan(localVersion))
-                {
-                    Console.WriteLine($"Nouvelle version disponible : {onlineVersion}. Téléchargement en cours...");
-
-                    // Télécharger le .exe mis à jour
-                    await GoogleDriveHelperHttpClient.DownloadFileAsync(OnlineLauncherExeId, launcherExe);
-
-                    // Mettre à jour la version locale
-                    await File.WriteAllTextAsync(launcherVersionFile, onlineVersion.ToString());
-
-                    Console.WriteLine("Launcher mis à jour !");
-                }
-
-                else
-                {
-                    Console.WriteLine("Launcher déjà à jour.");
-                }
-
-                Console.WriteLine("Lancement du launcher principal...");
-                Process.Start(launcherExe);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur dans LauncherUpdater : {ex.Message}");
-                try
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = launcherExe,
-                        Arguments = $"--from-updater",
-                        UseShellExecute = true
-                    });
-                }
-                catch
-                {
-                    Console.WriteLine("Échec du lancement du launcher principal.");
-                }
-            }
-
-            Console.WriteLine("=== Fin de LauncherUpdater ===");
-
-
-            static bool IsDotNet9Installed()
-            {
-                try
-                {
-                    ProcessStartInfo psi = new ProcessStartInfo
-                    {
-                        FileName = "dotnet",
-                        Arguments = "--list-runtimes",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-                    using var process = Process.Start(psi);
-                    string? output = process?.StandardOutput.ReadToEnd();
-                    process?.WaitForExit();
-                    return output != null && output.Contains("Microsoft.NETCore.App 9.");
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
-            static async Task InstallDotNet9Async()
-            {
-                string installerPath = Path.Combine(Path.GetTempPath(), "dotnet-runtime-9.exe");
-
-                using HttpClient client = new HttpClient();
-                using HttpResponseMessage response = await client.GetAsync(DotnetRuntimeUrl);
-                response.EnsureSuccessStatusCode();
-
-                await using var fs = new FileStream(installerPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                await response.Content.CopyToAsync(fs);
-
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
-                    FileName = installerPath,
-                    Arguments = "/install /quiet /norestart",
-                    UseShellExecute = true
+                    FileName = "dotnet",
+                    Arguments = "--list-runtimes",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
                 };
-                await Process.Start(psi)?.WaitForExitAsync()!;
+                using var process = Process.Start(psi);
+                string? output = process?.StandardOutput.ReadToEnd();
+                process?.WaitForExit();
+                return output != null && output.Contains("Microsoft.NETCore.App 9.");
             }
+            catch
+            {
+                return false;
+            }
+        }
 
+        static async Task InstallDotNet9Async()
+        {
+            string installerPath = Path.Combine(Path.GetTempPath(), "dotnet-runtime-9.exe");
+
+            using HttpClient client = new HttpClient();
+            using HttpResponseMessage response = await client.GetAsync(DotnetRuntimeUrl);
+            response.EnsureSuccessStatusCode();
+
+            await using var fs = new FileStream(installerPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await response.Content.CopyToAsync(fs);
+
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = installerPath,
+                Arguments = "/install /quiet /norestart",
+                UseShellExecute = true
+            };
+            await Process.Start(psi)?.WaitForExitAsync()!;
+        }
+
+        static void ExtractZipSafe(string zipPath, string destDir)
+        {
+            if (Directory.Exists(destDir))
+            {
+                foreach (var file in Directory.GetFiles(destDir, "*", SearchOption.AllDirectories))
+                    File.Delete(file);
+            }
+            else Directory.CreateDirectory(destDir);
+
+            using var zip = ZipFile.OpenRead(zipPath);
+            foreach (var entry in zip.Entries)
+            {
+                string fullPath = Path.Combine(destDir, entry.FullName);
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+                entry.ExtractToFile(fullPath, overwrite: true);
+            }
         }
 
         readonly struct Version
@@ -170,21 +166,16 @@ namespace LauncherUpdater
                 string[] parts = version.Split('.');
                 if (parts.Length != 3)
                 {
-                    _major = 0;
-                    _minor = 0;
-                    _subMinor = 0;
+                    _major = 0; _minor = 0; _subMinor = 0;
                     return;
                 }
-
                 _major = short.Parse(parts[0]);
                 _minor = short.Parse(parts[1]);
                 _subMinor = short.Parse(parts[2]);
             }
 
             internal bool IsDifferentThan(Version other)
-            {
-                return _major != other._major || _minor != other._minor || _subMinor != other._subMinor;
-            }
+                => _major != other._major || _minor != other._minor || _subMinor != other._subMinor;
 
             public override string ToString() => $"{_major}.{_minor}.{_subMinor}";
         }
@@ -196,49 +187,52 @@ namespace LauncherUpdater
                 UseCookies = true,
                 CookieContainer = new CookieContainer()
             };
-
             private static readonly HttpClient Client = new HttpClient(Handler);
 
-            public static async Task DownloadFileAsync(string fileId, string destinationPath)
+            public static async Task DownloadFileAsync(string fileId, string destinationPath, bool handleConfirmation)
             {
-                string baseUrl = $"https://drive.google.com/uc?export=download&id={fileId}";
+                string url = $"https://drive.google.com/uc?export=download&id={fileId}";
 
-                // Étape 1 : Télécharger la page d'avertissement
-                var htmlPage = await Client.GetStringAsync(baseUrl);
+                if (!handleConfirmation)
+                {
+                    using var response = await Client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    await using var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    await response.Content.CopyToAsync(fs);
+                    return;
+                }
 
-                // Étape 2 : Parser la page HTML
+                // Récupération page HTML pour confirmation
+                var html = await Client.GetStringAsync(url);
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(htmlPage);
+                doc.LoadHtml(html);
 
-                var formNode = doc.DocumentNode.SelectSingleNode("//form[@id='download-form']");
-                if (formNode == null)
-                    throw new Exception("Formulaire de téléchargement introuvable sur la page Google Drive.");
+                var form = doc.DocumentNode.SelectSingleNode("//form[@id='download-form']");
+                if (form == null)
+                {
+                    // Pas de formulaire → fichier < 50Mo, téléchargement direct
+                    using var resp = await Client.GetAsync(url);
+                    resp.EnsureSuccessStatusCode();
+                    await using var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    await resp.Content.CopyToAsync(fs);
+                    return;
+                }
 
-                string actionUrl = formNode.GetAttributeValue("action", null!);
-                if (string.IsNullOrEmpty(actionUrl))
-                    throw new Exception("Attribut 'action' manquant dans le formulaire de téléchargement.");
-
-                var inputs = formNode.SelectNodes(".//input[@type='hidden']");
-                if (inputs == null)
-                    throw new Exception("Champs de formulaire manquants dans la page Google Drive.");
-
+                string action = form.GetAttributeValue("action", null!);
+                var inputs = form.SelectNodes(".//input[@type='hidden']");
                 var query = HttpUtility.ParseQueryString(string.Empty);
                 foreach (var input in inputs)
                 {
                     string name = input.GetAttributeValue("name", "");
                     string value = input.GetAttributeValue("value", "");
-                    if (!string.IsNullOrEmpty(name))
-                        query[name] = value;
+                    if (!string.IsNullOrEmpty(name)) query[name] = value;
                 }
 
-                string downloadUrl = $"{actionUrl}?{query}";
-
-                // Étape 3 : Télécharger le fichier réel
-                using var response = await Client.GetAsync(downloadUrl);
-                response.EnsureSuccessStatusCode();
-
-                await using var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                await response.Content.CopyToAsync(fs);
+                string downloadUrl = $"{action}?{query}";
+                using var response2 = await Client.GetAsync(downloadUrl);
+                response2.EnsureSuccessStatusCode();
+                await using var fs2 = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await response2.Content.CopyToAsync(fs2);
             }
         }
     }
