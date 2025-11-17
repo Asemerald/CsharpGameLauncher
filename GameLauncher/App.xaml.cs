@@ -12,6 +12,14 @@ namespace GameLauncher
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            // If any other instance is running, quit
+            using Mutex mutex = new Mutex(true, "GameLauncher_Unique_Mutex_Name", out bool isNewInstance);
+            if (!isNewInstance)
+            {
+                Current.Shutdown();
+                return;
+            }
+            
             bool startedByUpdater = e.Args.Contains("--from-updater");
 
             // Si lancé directement, lancer l'updater et quitter
@@ -33,8 +41,8 @@ namespace GameLauncher
 
             base.OnStartup(e);
 
-            MainWindow window = new MainWindow();
-            window.Show();
+            /*MainWindow window = new MainWindow();
+            window.Show();*/
         }
     }
 }

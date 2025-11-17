@@ -42,7 +42,20 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\LauncherUpdater\bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+
+
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
