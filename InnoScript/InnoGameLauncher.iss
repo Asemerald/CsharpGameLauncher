@@ -3,15 +3,15 @@
 ; Non-commercial use only
 
 #define MyAppName "Mortar Game"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "0.9"
 #define MyAppPublisher "Kaboom Studio"
-#define MyAppURL "https://github.com/Asemerald/Mortier-Fu"
-#define MyAppExeName "LauncherUpdater.exe"
+#define MyAppURL "https://github.com/Asemerald/mortier-fu"
+#define MyAppExeName "GameLauncher.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{0610DAB9-72C1-48F5-9BA8-D903CB01EA91}
+AppId={{C125FC00-D9E9-4E08-BA9E-E8D8E71490FA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -30,32 +30,40 @@ ArchitecturesAllowed=x64compatible
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-; Remove the following line to run in administrative install mode (install for all users).
-PrivilegesRequired=lowest
+; Uncomment the following line to run in non administrative install mode (install for current user only).
+;PrivilegesRequired=lowest
 OutputBaseFilename=Install Mortar Game
 SetupIconFile="..\Resources\Icon.ico"
 SolidCompression=yes
-WizardStyle=classic
+WizardStyle=modern dynamic
+
+[Languages]
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+
+
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+
 [Files]
-Source: "..\GameLauncher\bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-
-[InstallDelete]
-Type: filesandordirs; Name: "{app}\*"
-
-[UninstallDelete]
-Type: filesandordirs; Name: "{app}"
-
-
-[InstallDelete]
-Type: filesandordirs; Name: "{app}\*"
-
-[UninstallDelete]
-Type: filesandordirs; Name: "{app}"
-
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\D3DCompiler_47_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\PenImc_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\PresentationNative_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\vcruntime140_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\wpfgfx_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
