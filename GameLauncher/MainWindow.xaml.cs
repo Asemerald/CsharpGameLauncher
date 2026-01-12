@@ -62,8 +62,26 @@ namespace GameLauncher
             _rootPath = AppDomain.CurrentDomain.BaseDirectory; 
             _versionFile = Path.Combine(_rootPath, "Version.txt");
             _gameZip = Path.Combine(_rootPath, "Mortar Game.zip");
-            _gameExe = Path.Combine(_rootPath, "Mortar Game", "Mortar Game.exe");
+            _gameExe = FindGameExe();
         }
+        
+        private string FindGameExe()
+        {
+            // Cherche tous les dossiers dans le dossier du launcher
+            foreach (string dir in Directory.GetDirectories(_rootPath))
+            {
+                // Cherche tous les exe récursivement
+                string exe = Directory.GetFiles(dir, "*.exe", SearchOption.AllDirectories)
+                    .FirstOrDefault(f =>
+                        !Path.GetFileName(f).Equals("UnityCrashHandler64.exe", StringComparison.OrdinalIgnoreCase));
+
+                if (exe != null)
+                    return exe;
+            }
+
+            return null;
+        }
+
 
         private void CheckForUpdates()
         {
