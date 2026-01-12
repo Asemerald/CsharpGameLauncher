@@ -57,12 +57,8 @@ Type: filesandordirs; Name: "{app}\*"
 Type: filesandordirs; Name: "{app}"
 
 [Files]
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\D3DCompiler_47_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\PenImc_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\PresentationNative_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\vcruntime140_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\tdrue\OneDrive\Documents\CsharpProject\CsharpGameLauncher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\wpfgfx_cor3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\t.druesne\Documents\C# Project\Game Launcher\csharp-game-launcher\GameLauncher\bin\Release\net9.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

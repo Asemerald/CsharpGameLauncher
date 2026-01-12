@@ -24,7 +24,7 @@ namespace GameLauncher
         private readonly string _rootPath;
         private readonly string _versionFile;
         private readonly string _gameZip;
-        private readonly string _gameExe;
+        private string _gameExe;
         
         private const string OnlineVersionUrl = "https://drive.google.com/uc?export=download&id=17U6jVvrcR_7zatDoGBx0-mYLgdn7UKrO";
         private const string OnlineGameZipId = "1MQfPGjsSgpk8rjTBq7TgLkJ6DIJSv_14";
@@ -60,6 +60,7 @@ namespace GameLauncher
             InitializeComponent();
 
             _rootPath = AppDomain.CurrentDomain.BaseDirectory; 
+            Console.WriteLine($"Root Path: {_rootPath}");
             _versionFile = Path.Combine(_rootPath, "Version.txt");
             _gameZip = Path.Combine(_rootPath, "Mortar Game.zip");
             _gameExe = FindGameExe();
@@ -158,6 +159,16 @@ namespace GameLauncher
 
                 File.WriteAllText(_versionFile, onlineVersion.ToString());
                 VersionText.Text = onlineVersion.ToString();
+                
+                _gameExe = FindGameExe();
+
+                if (_gameExe == null)
+                {
+                    Status = LauncherStatus.Failed;
+                    MessageBox.Show("Impossible de trouver l'exécutable du jeu après l'installation.");
+                    return;
+                }
+                
                 Status = LauncherStatus.Ready;
             }
             catch (Exception ex)
@@ -176,6 +187,11 @@ namespace GameLauncher
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!File.Exists(_gameExe))
+            {
+                FindGameExe();
+            }
+            
             if (File.Exists(_gameExe) && Status == LauncherStatus.Ready)
             {
                 string gameDir = Path.GetDirectoryName(_gameExe);
@@ -191,6 +207,10 @@ namespace GameLauncher
             else if (Status == LauncherStatus.Failed)
             {
                 CheckForUpdates();
+            }
+            else
+            {
+                throw new FileNotFoundException("Game executable not found at path: " + _gameExe);
             }
         }
     }
